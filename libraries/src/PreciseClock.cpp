@@ -1,7 +1,7 @@
 /*
 made by jaejunlee, 2015.10.23
 */
-#include "cpp_factory/PreciseClock.h"
+#include "cpp_factory/clock/PreciseClock.h"
 
 namespace cpp_factory {
 	PreciseClock::PreciseClock() {
