@@ -15,7 +15,7 @@ void myPrintf(const char* str){
 #define USE_PROFILER 1
 #define LIB_PROFILER_IMPLEMENTATION
 #define LIB_PROFILER_PRINTF myPrintf
-#include "cpp_factory/Profiling/libProfiler.h"
+#include "cpp_factory/profiling/libProfiler.h"
 
 using namespace std;
 

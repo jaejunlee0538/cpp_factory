@@ -12,6 +12,7 @@
 #include <boost/regex.hpp>
 #include <boost/ref.hpp>
 #include <boost/bind.hpp>
+#include <boost/config.hpp>
 namespace cpp_factory {
     class GetNumberOfFiles {
     public:
@@ -44,20 +45,16 @@ namespace cpp_factory {
 //    }
 //};
 
-    struct FileSorter {
-        virtual ~FileSorter() { }
 
-        virtual bool operator()(const boost::filesystem::path &p1, const boost::filesystem::path &p2) const = 0;
-    };
 
 /*
  * Sort using only file names(excluding extension)
  */
-    struct SortByName : public FileSorter {
+    struct SortByName {
         SortByName(bool ascending = true) : ascending_order(ascending) {
         }
 
-        virtual bool operator()(const boost::filesystem::path &p1, const boost::filesystem::path &p2) const {
+        bool operator()(const boost::filesystem::path &p1, const boost::filesystem::path &p2) {
             if (ascending_order)
                 return p1.stem().string() < p2.stem().string();
             else
@@ -71,11 +68,11 @@ namespace cpp_factory {
 /*
  * Sort using only file names(excluding extension)
  */
-    struct SortByExtension : public FileSorter {
+    struct SortByExtension {
         SortByExtension(bool ascending = true) : ascending_order(ascending) {
         }
 
-        virtual bool operator()(const boost::filesystem::path &p1, const boost::filesystem::path &p2) const {
+        bool operator()(const boost::filesystem::path &p1, const boost::filesystem::path &p2) {
             if (ascending_order)
                 return p1.extension().string() < p2.extension().string();
             else
@@ -86,13 +83,18 @@ namespace cpp_factory {
         bool ascending_order;
     };
 
+#ifndef BOOST_NO_CXX11_FUNCTION_TEMPLATE_DEFAULT_ARGS
 /*
  * Perl Regular Expression Syntax :
  *      http://www.boost.org/doc/libs/1_60_0/libs/regex/doc/html/boost_regex/syntax/perl_syntax.html
  */
+
     class FilesList : public std::vector<boost::filesystem::path> {
     public:
-        FilesList(const std::string &dir, const std::string &f_regex, const FileSorter &fileSorter = SortByName()) {
+
+        template <class FileSorterT=SortByName> //default sorter(SortByName)
+        FilesList(const std::string &dir, const std::string &f_regex, FileSorterT fileSorter=FileSorterT()) {
+            //TODO : Default value for template is only availible in c++11.
             boost::regex e(f_regex, boost::regex::perl);
             boost::filesystem::path path(dir);
             if (!boost::filesystem::is_directory(path)) {
@@ -104,11 +106,11 @@ namespace cpp_factory {
                     this->push_back(file->path());
             }
 
-            std::sort(this->begin(), this->end(), boost::bind<bool>(boost::ref(fileSorter), _1, _2));
+            std::sort(this->begin(), this->end(), fileSorter);
         }
     };
 
-
+#endif
 /*
  * RegexForFileExtension regex("png");//(
  */
@@ -134,4 +136,54 @@ namespace cpp_factory {
         }
     };
 }
+#if defined(__linux__)
+#include <pwd.h>
+#include <ctime>
+namespace cpp_factory{
+
+    struct LinuxHomeDir:public std::string{
+        LinuxHomeDir(){
+            passwd* pw = getpwuid(getuid());
+            this->assign(pw->pw_dir);
+        }
+    };
+
+    struct FileNameWithTimeStamp:public std::string{
+        enum TimeStampFormat{
+            YYYYMMDD_hhmmss = 1,
+            YYYYMMDD,
+            hhmmss
+        };
+
+        FileNameWithTimeStamp(const std::string& extension, const std::string& file_name="", TimeStampFormat fmt=YYYYMMDD_hhmmss){
+            time_t rawtime;
+            struct tm* timeinfo;
+            time(&rawtime);
+            timeinfo = localtime(&rawtime);
+
+            char buffer[80];
+            switch(fmt){
+                case YYYYMMDD_hhmmss:
+                    strftime(buffer,80,"%Y-%m-%d_%I:%M:%S", timeinfo);
+                    break;
+                case YYYYMMDD:
+                    strftime(buffer,80,"%Y-%m-%d", timeinfo);
+                    break;
+                case hhmmss:
+                    strftime(buffer,80,"%I:%M:%S", timeinfo);
+                    break;
+            }
+            std::string stamp(buffer);
+            if(!file_name.empty())
+                this->assign(file_name+"_"+ stamp);
+            else
+                this->assign(stamp);
+
+            *this += ".";
+            *this += extension;
+        }
+    };
+
+}
+#endif
 #endif //PLAYGROUND_VELODYNEREADER_H

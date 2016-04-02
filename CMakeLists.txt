@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(cpp_factory)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 set(CMAKE_LIB_INSTALL_DIR "/usr/lib")
 set(CMAKE_HEADERS_INSTALL_DIR "/usr/include")
@@ -38,6 +38,17 @@ if(${BUILD_EXAMPLES})
     add_executable(ex_FileLister  ${LIB_EXAMPLES_SRC_DIR}/ex_FileLister.cpp)
     target_link_libraries(ex_FileLister cpp_factory)
     add_dependencies(ex_FileLister cpp_factory)
+
+    add_executable(ex_CodeMarker
+    ${LIB_EXAMPLES_SRC_DIR}/CodeMarker/ex_CodeMarker.cpp
+    ${LIB_EXAMPLES_SRC_DIR}/CodeMarker/MyClass1.cpp
+    ${LIB_EXAMPLES_SRC_DIR}/CodeMarker/MyClass2.cpp)
+    target_link_libraries(ex_CodeMarker cpp_factory)
+    add_dependencies(ex_CodeMarker cpp_factory)
+
+#    add_executable(ex_simpleProfiler  ${LIB_EXAMPLES_SRC_DIR}/ex_simpleProfiler.cpp)
+#    target_link_libraries(ex_simpleProfiler cpp_factory)
+#    add_dependencies(ex_simpleProfiler cpp_factory)
 endif(${BUILD_EXAMPLES})
 
 ##############################################
@@ -45,7 +56,8 @@ set(CPP_FACTORY_LIB_SRC
     libraries/src/PreciseClock.cpp
     libraries/src/PIDController.cpp
     libraries/src/LoopInterface.cpp
-    libraries/src/FileLister.cpp
+    libraries/src/FileUtils.cpp
+    libraries/src/conio_linux.cpp
     )
 
 add_library(cpp_factory ${CPP_FACTORY_LIB_SRC})

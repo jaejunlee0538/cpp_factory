@@ -2,8 +2,20 @@
 made by jaejunlee, 2015.10.23
 */
 #include "cpp_factory/clock/PreciseClock.h"
+#if defined(WIN32) | defined(WIN64)
+#include <windows.h>
+#pragma comment (lib, "winmm.lib")
+
+#elif defined(__linux__)
+#include <unistd.h>
+#include <sys/time.h>
+#include <iosfwd>
+#endif
 
 namespace cpp_factory {
+
+
+
 	PreciseClock::PreciseClock() {
 #if defined(WIN32) | defined(WIN64)
 	LARGE_INTEGER freq;
@@ -11,20 +23,9 @@ namespace cpp_factory {
 		throw "QueryPerformanceFrequency() failed!";
 	this->freq_coeff = 1.0 / freq.QuadPart;
 #endif
-		this->reset();
 	}
 
-	void PreciseClock::reset(void) {
-		this->t_start = this->getCPUClock_sec();
-		this->t_current = this->t_start;
-	}
-
-	double PreciseClock::getElapsedTime_sec(void) {
-		this->t_current = this->getCPUClock_sec();
-		return (this->t_current - this->t_start);
-	}
-
-	double PreciseClock::getCPUClock_sec() const {
+	double PreciseClock::getPreciseTime(void) const {
 #if defined(WIN32) | defined(WIN64)
 	LARGE_INTEGER current_time;
 	QueryPerformanceCounter(&current_time);
@@ -38,7 +39,7 @@ namespace cpp_factory {
 #endif
 	}
 
-	ClockTimeout::ClockTimeout(const double &timeout_sec) {
+	ClockTimeout::ClockTimeout(const double &timeout_sec):ElapsedTime(false) {
 		this->duration_sec = timeout_sec;
 		this->resetTimeout();
 	}
@@ -60,7 +61,6 @@ namespace cpp_factory {
 		this->is_timeout = false;
 	}
 
-
 	void ClockTimeout::setTimeoutDuration(const double &timeout_sec) {
 		this->duration_sec = timeout_sec;
 	}
@@ -79,6 +79,10 @@ namespace cpp_factory {
 		return this->getElapsedTime_sec() - this->duration_sec;
 	}
 
+	std::ostream& operator<<(std::ostream& os, ElapsedTime& et){
+		os<<et.getElapsedTime_sec();
+		return os;
+	}
 
 	FrequencyEstimator::FrequencyEstimator(const double &sampling_period)
 			: sampler(sampling_period) {
