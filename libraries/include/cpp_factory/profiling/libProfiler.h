@@ -414,6 +414,15 @@ typedef struct stGenProfilerData
     char			szBunchCodeName[1024];	// temporary.
 } tdstGenProfilerData;
 
+#if IS_OS_WINDOWS
+typedef DWORD threadIDType;
+#elif IS_OS_LINUX
+typedef pthread_t threadIDType;
+#elif IS_OS_MACOSX
+#warning "\"typedef __uint64_t threadIDType\" is right?"
+typedef __uint64_t threadIDType;//
+#endif
+
 //  Hold the call stack
 typedef std::vector<tdstGenProfilerData> tdCallStackType;
 
@@ -421,7 +430,7 @@ typedef std::vector<tdstGenProfilerData> tdCallStackType;
 std::map<std::string, tdstGenProfilerData> mapProfilerGraph;
 
 // Hold profiler data vector in function of the thread
-map<unsigned long, tdCallStackType> mapCallsByThread;
+map<threadIDType, tdCallStackType> mapCallsByThread;
 
 // Critical section
 ZCriticalSection_t	*gProfilerCriticalSection;
@@ -469,15 +478,14 @@ void Zprofiler_disable()
     // Clear maps
     mapCallsByThread.clear();
     mapProfilerGraph.clear();
-    mapCallsByThread.clear();
     
     // Delete the mutex
     DestroyCriticalSection(gProfilerCriticalSection);
 }
 #if IS_OS_MACOSX
-unsigned long GetCurrentThreadId() { return 0; }
+threadIDType GetCurrentThreadId() { return 0; }
 #elif IS_OS_LINUX
-unsigned long GetCurrentThreadId() { return 0; }
+threadIDType GetCurrentThreadId() { return pthread_self(); }
 #endif
 
 //
@@ -487,7 +495,7 @@ void Zprofiler_start( const char *profile_name )
 {
     LockCriticalSection(gProfilerCriticalSection);
     
-    unsigned long ulThreadId = GetCurrentThreadId();
+    threadIDType ulThreadId = GetCurrentThreadId();
     
     // Add the profile name in the callstack vector
     tdstGenProfilerData	GenProfilerData;
@@ -497,7 +505,7 @@ void Zprofiler_start( const char *profile_name )
     
     // Find or add callstack
     tdCallStackType TmpCallStack;
-    map<unsigned long, tdCallStackType>::iterator IterCallsByThreadMap = mapCallsByThread.find(ulThreadId);
+    map<threadIDType, tdCallStackType>::iterator IterCallsByThreadMap = mapCallsByThread.find(ulThreadId);
     if( IterCallsByThreadMap == mapCallsByThread.end() )
     {
         // Not found. So insert the new pair
@@ -509,7 +517,7 @@ void Zprofiler_start( const char *profile_name )
     if ((*IterCallsByThreadMap).second.empty())
     {
         GenProfilerData.nbCalls	= 1;
-        sprintf(GenProfilerData.szBunchCodeName, "%s%d%s%s", _NAME_SEPARATOR_, (int)ulThreadId, _THREADID_NAME_SEPARATOR_, profile_name);
+        sprintf(GenProfilerData.szBunchCodeName, "%s%lu%s%s", _NAME_SEPARATOR_, ulThreadId, _THREADID_NAME_SEPARATOR_, profile_name);
         (*IterCallsByThreadMap).second.push_back( GenProfilerData );
     }
     // It's not the first element of the vector
@@ -539,10 +547,10 @@ void Zprofiler_start( const char *profile_name )
 //
 void Zprofiler_end( )
 {
-    unsigned long ulThreadId = GetCurrentThreadId();
+    threadIDType ulThreadId = GetCurrentThreadId();
     
     // Retrieve the right entry in function of the threadId
-    map<unsigned long, tdCallStackType>::iterator IterCallsByThreadMap = mapCallsByThread.find(ulThreadId);
+    map<threadIDType, tdCallStackType>::iterator IterCallsByThreadMap = mapCallsByThread.find(ulThreadId);
     
     // Check if vector is empty
     if( (*IterCallsByThreadMap).second.empty() )
@@ -613,6 +621,7 @@ void Zprofiler_end( )
 
 bool MyDataSortPredicate(const tdstGenProfilerData un, const tdstGenProfilerData deux)
 {
+    //Sort by name
     return un.szBunchCodeName > deux.szBunchCodeName;
 }
 
@@ -652,7 +661,7 @@ void LogProfiler()
     }
     
     // Sort the vector
-    std::sort(tmpCallStack.begin(), tmpCallStack.end(), MyDataSortPredicate);
+    std::sort(tmpCallStack.begin(), tmpCallStack.end(), MyDataSortPredicate);//sort by name
     
     // Create a map with thread Ids
     for(IterTmpCallStack=tmpCallStack.begin(); IterTmpCallStack!=tmpCallStack.end(); ++IterTmpCallStack)
@@ -806,7 +815,7 @@ void LogProfiler()
         LOG( "_______________________________________________________________________________________\n\n");
         ++IterThreadIdsCount;
     }
-    
+
 }
 
 ////
