@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(cpp_factory)
 
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 set(CMAKE_LIB_INSTALL_DIR "/usr/lib")
 set(CMAKE_HEADERS_INSTALL_DIR "/usr/include")
@@ -31,7 +31,9 @@ if(${BUILD_EXAMPLES})
     target_link_libraries(ex_ConsoleUtils cpp_factory)
     add_dependencies(ex_ConsoleUtils cpp_factory)
 
-    add_executable(ex_libProfiler  ${LIB_EXAMPLES_SRC_DIR}/ex_libProfiler.cpp)
+    add_executable(ex_libProfiler
+        ${LIB_EXAMPLES_SRC_DIR}/libProfiler/ex_libProfiler.cpp
+        ${LIB_EXAMPLES_SRC_DIR}/libProfiler/libProfilerTestClass.cpp  )
     target_link_libraries(ex_libProfiler cpp_factory)
     add_dependencies(ex_libProfiler cpp_factory)
 
@@ -45,6 +47,10 @@ if(${BUILD_EXAMPLES})
     ${LIB_EXAMPLES_SRC_DIR}/CodeMarker/MyClass2.cpp)
     target_link_libraries(ex_CodeMarker cpp_factory)
     add_dependencies(ex_CodeMarker cpp_factory)
+
+    add_executable(ex_MemberCheck  ${LIB_EXAMPLES_SRC_DIR}/ex_MemberCheck.cpp)
+    target_link_libraries(ex_MemberCheck cpp_factory)
+    add_dependencies(ex_MemberCheck cpp_factory)
 
 #    add_executable(ex_simpleProfiler  ${LIB_EXAMPLES_SRC_DIR}/ex_simpleProfiler.cpp)
 #    target_link_libraries(ex_simpleProfiler cpp_factory)

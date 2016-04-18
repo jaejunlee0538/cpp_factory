@@ -8,12 +8,14 @@
 #include <string.h>
 #include <stdio.h>
 /*
- * Use file name only.
+ * Macro to extract file name(not full path)
  */
 #define __FILENAME__    (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/')+1:__FILE__)
 
 
 #ifdef USE_LOG_FUNC_LINE
+
+// Write current function name and line number to 'os'.
 #define LOG_FUNC_LINE(os)  \
 os<<"["<<__PRETTY_FUNCTION__<<"/ Line "<<__LINE__<<"]"<<std::endl;
 #else
@@ -30,13 +32,15 @@ namespace __do_not_use__ {
     }
 }
 
+//Write formatted message to 'os'
 #define LOG_MESSAGE(os, fmt, ...) {\
     sprintf(__do_not_use__::__getBuffer(), fmt, ##__VA_ARGS__);\
     os<<__do_not_use__::__getBuffer()<<"\n";}
 
-#define LOG_MESSAGE_WITH_FNAME_LINE(os, fmt, ...){\
+//Write formatted message to 'os' with file name and line number.
+#define LOG_MESSAGE_WITH_FNAME_LINE(os, fmt, ...) {\
     sprintf(__do_not_use__::__getBuffer(), fmt, ##__VA_ARGS__);\
-    os<<__do_not_use__::__getBuffer()<<"["<<__FILENAME__<<"/ Line "<<__LINE__<<"]\n";}
+    os<<__do_not_use__::__getBuffer()<<"["<<__FILENAME__<<":"<<__LINE__<<"]\n";}
 #else
 #define LOG_MESSAGE(os, fmt, ...)
 #define LOG_MESSAGE_WITH_FNAME_LINE(os, fmt, ...)

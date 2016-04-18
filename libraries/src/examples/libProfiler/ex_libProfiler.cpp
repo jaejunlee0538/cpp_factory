@@ -15,20 +15,17 @@ void myPrintf(const char* str){
 #define USE_PROFILER 1
 #define LIB_PROFILER_IMPLEMENTATION
 #define LIB_PROFILER_PRINTF myPrintf
+#define LOG_ELAPSED_TIME_HISTORY 1
 #include "cpp_factory/profiling/libProfiler.h"
 
-using namespace std;
+#include "libProfilerTestClass.h"
 
-void myfunction(){
-    PROFILER_START(myfunction);
-    ::sleep(1);
-    PROFILER_END();
-}
+using namespace std;
 
 pthread_t id1;
 void*testThread(void *pData){
     id1 = pthread_self();
-    int count = 200;
+    int count = 50;
     while(count--){
         PROFILER_START(testThread);
         ::usleep(10000);
@@ -37,25 +34,36 @@ void*testThread(void *pData){
     return NULL;
 }
 
+
+void myfunction(){
+    PROFILER_START(myfunction);
+    ::usleep(rand()%10000);
+    PROFILER_END();
+}
+
 int main()
 {
+    PROFILER_ENABLE;
+
     pthread_t thread_id;
     pthread_create(&thread_id, NULL, testThread, NULL);
 
-    PROFILER_ENABLE;
+    libProfilerTestClass testClass;
     PROFILER_START(main);
     PROFILER_START(main_usleep);
     ::usleep(10000);::usleep(10000);
-    ::usleep(10000);::usleep(10000);
-    PROFILER_END();
-    myfunction();
+    ::usleep(10000);
 
-//    std::cout<<thread_id<<","<<id1<<std::endl;
+    PROFILER_END();
+    for(int i=0;i<100;i++)
+        myfunction();
+    testThread(NULL);
+
     PROFILER_END();
     pthread_join(thread_id, NULL);
 
-    testThread(NULL);
     LogProfiler();
     PROFILER_DISABLE;
+
     return 0;
 }

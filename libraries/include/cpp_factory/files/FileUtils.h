@@ -13,6 +13,7 @@
 #include <boost/ref.hpp>
 #include <boost/bind.hpp>
 #include <boost/config.hpp>
+#include <boost/lexical_cast.hpp>
 namespace cpp_factory {
     class GetNumberOfFiles {
     public:
@@ -83,6 +84,30 @@ namespace cpp_factory {
         bool ascending_order;
     };
 
+/*
+ *
+ */
+    struct SortByDigitsInName{
+        SortByDigitsInName(const std::string& regex= "[0-p]+", bool ascending = true) :
+                ascending_order(ascending), e(regex){ }
+
+        bool operator()(const boost::filesystem::path &p1, const boost::filesystem::path &p2) {
+            boost::smatch sm1, sm2;
+            if(boost::regex_search(p1.stem().string(), sm1, e) && boost::regex_search(p2.stem().string(), sm2, e)){
+                if(ascending_order)
+                    return boost::lexical_cast<int>(sm1[0]) < boost::lexical_cast<int>(sm2[0]);
+                else
+                    return boost::lexical_cast<int>(sm1[0]) > boost::lexical_cast<int>(sm2[0]);
+            }
+
+            std::ostringstream ss;
+            ss<<"No digits in the file names("<<p1.stem()<<" vs "<<p2.stem()<<")";
+            throw std::runtime_error(ss.str());
+        }
+        boost::regex e;
+        bool ascending_order;
+    };
+
 #ifndef BOOST_NO_CXX11_FUNCTION_TEMPLATE_DEFAULT_ARGS
 /*
  * Perl Regular Expression Syntax :
@@ -93,7 +118,7 @@ namespace cpp_factory {
     public:
 
         template <class FileSorterT=SortByName> //default sorter(SortByName)
-        FilesList(const std::string &dir, const std::string &f_regex, FileSorterT fileSorter=FileSorterT()) {
+        FilesList(const std::string &dir, const std::string &f_regex, FileSorterT fileSorter) {
             //TODO : Default value for template is only availible in c++11.
             boost::regex e(f_regex, boost::regex::perl);
             boost::filesystem::path path(dir);
@@ -123,6 +148,10 @@ namespace cpp_factory {
  * RegexForFileExtensions regex("png,jpg,bmp");
  */
     struct RegexForFileExtensions : public std::string {
+    /*
+     * Input:
+     *  extensions : extension(s) separated by ','
+     */
         RegexForFileExtensions(const std::string &extensions) {
             std::string tmp_str = extensions;
             int pos;
@@ -131,6 +160,22 @@ namespace cpp_factory {
 
             while ((pos = tmp_str.find_first_of(',')) != tmp_str.npos) {
                 tmp_str.replace(pos, 1, str);
+            }
+            this->assign(".+\\.(" + tmp_str + "){1}");
+        }
+
+        /*
+         * Input:
+         *  extensions : a vector of extensions(s)
+         */
+        RegexForFileExtensions(const std::vector<std::string>& extensions){
+            std::string tmp_str;
+            std::string str_or="|";
+            assert(extensions.size()>0);
+            tmp_str += extensions[0];
+            for(int i=1;i<extensions.size();i++){
+                tmp_str+=str_or;
+                tmp_str += extensions[i];
             }
             this->assign(".+\\.(" + tmp_str + "){1}");
         }

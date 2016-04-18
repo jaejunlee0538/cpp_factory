@@ -7,15 +7,20 @@
 using namespace cpp_factory;
 int main(){
 #ifndef BOOST_NO_CXX11_FUNCTION_TEMPLATE_DEFAULT_ARGS
-    FilesList filesList("/home/ub1404/Downloads",RegexForFileExtensions("bmp,jpg,png"));
+    FilesList filesList("/usr/include",RegexForFileExtensions("h"),
+    cpp_factory::SortByName());
 
     BOOST_FOREACH(boost::filesystem::path p, filesList){
                     std::cout<<p.string()<<std::endl;
     }
 #endif
+
     cpp_factory::LinuxHomeDir homeDir;
     std::cout<<homeDir+"/map"<<std::endl;
 
     std::cout<<FileNameWithTimeStamp("bin","my_file")<<std::endl;
+
+
+
     return 1;
 }

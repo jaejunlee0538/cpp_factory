@@ -14,6 +14,7 @@ void costlyFunction(){
     ElapsedTime runningTime;
     ::usleep(123450);
     LOG_MESSAGE(std::cerr, "%lf sec", runningTime.getElapsedTime_sec());
+    LOG_MESSAGE_WITH_FNAME_LINE(std::cerr, "This is debug message");
 }
 
 int main(void){
@@ -23,8 +24,7 @@ int main(void){
     c1.myFunction();
     c2.myFunction();
     std::cerr<<"-----------------------------------"<<std::endl;
-    for(int i=0;i<10;i++)
-    {
+    for(int i=0;i<10;i++){
         costlyFunction();
     }
     return 0;
