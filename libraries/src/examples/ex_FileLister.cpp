@@ -16,7 +16,7 @@ int main(){
 #endif
 
     cpp_factory::LinuxHomeDir homeDir;
-    std::cout<<homeDir+"/map"<<std::endl;
+    std::cout<<"Home directory is : "<<homeDir<<std::endl;
 
     std::cout<<FileNameWithTimeStamp("bin","my_file")<<std::endl;
 

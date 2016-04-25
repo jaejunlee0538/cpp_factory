@@ -423,7 +423,11 @@ typedef struct stGenProfilerData
 
         minTime = *std::min_element(elapsedTimes.begin(), elapsedTimes.end());
         maxTime = *std::max_element(elapsedTimes.begin(), elapsedTimes.end());
-        totalTime = std::accumulate(elapsedTimes.begin(), elapsedTimes.end(), 0.0);
+        totalTime= 0.0;
+        for(std::vector<double>::const_iterator iter = elapsedTimes.begin(); iter!=elapsedTimes.end();iter++){
+            totalTime += *iter;
+        }
+//        totalTime = std::accumulate(elapsedTimes.begin(), elapsedTimes.end(), 0.0);   //requires c++11
         for(size_t i=1;i<n;i++){
             totalTime += elapsedTimes[i];
         }

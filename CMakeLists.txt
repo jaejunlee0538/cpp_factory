@@ -9,13 +9,17 @@ set(CMAKE_HEADERS_INSTALL_DIR "/usr/include")
 #set(CMAKE_HEADERS_INSTALL_DIR "${PROJECT_SOURCE_DIR}/build_test/include")
 set(BUILD_EXAMPLES "TRUE")
 
-find_package(Boost REQUIRED COMPONENTS filesystem regex thread system)
+find_package(PCL 1.7 REQUIRED)
+# TODO : find_package(PCL...) overwrites ${Boost_LIBRARIES}
+find_package(Boost REQUIRED COMPONENTS filesystem thread system regex)
 
 include_directories(
 libraries/include
 ${Boost_INCLUDE_DIRS}
+${PCL_INCLUDE_DIRS}
 )
 
+#message("${Boost_LIBRARIES}")
 if(${BUILD_EXAMPLES})
     set(LIB_EXAMPLES_SRC_DIR libraries/src/examples)
 
@@ -27,9 +31,9 @@ if(${BUILD_EXAMPLES})
     target_link_libraries(ex_LoopInterface cpp_factory)
     add_dependencies(ex_LoopInterface cpp_factory)
 
-    add_executable(ex_ConsoleUtils ${LIB_EXAMPLES_SRC_DIR}/ex_ConsoleUtils.cpp)
-    target_link_libraries(ex_ConsoleUtils cpp_factory)
-    add_dependencies(ex_ConsoleUtils cpp_factory)
+    add_executable(ex_stringConversions ${LIB_EXAMPLES_SRC_DIR}/string/ex_stringConversions.cpp)
+    target_link_libraries(ex_stringConversions cpp_factory)
+    add_dependencies(ex_stringConversions cpp_factory)
 
     add_executable(ex_libProfiler
         ${LIB_EXAMPLES_SRC_DIR}/libProfiler/ex_libProfiler.cpp
@@ -38,7 +42,7 @@ if(${BUILD_EXAMPLES})
     add_dependencies(ex_libProfiler cpp_factory)
 
     add_executable(ex_FileLister  ${LIB_EXAMPLES_SRC_DIR}/ex_FileLister.cpp)
-    target_link_libraries(ex_FileLister cpp_factory)
+    target_link_libraries(ex_FileLister cpp_factory ${Boost_LIBRARIES})
     add_dependencies(ex_FileLister cpp_factory)
 
     add_executable(ex_CodeMarker
@@ -52,7 +56,15 @@ if(${BUILD_EXAMPLES})
     target_link_libraries(ex_MemberCheck cpp_factory)
     add_dependencies(ex_MemberCheck cpp_factory)
 
-#    add_executable(ex_simpleProfiler  ${LIB_EXAMPLES_SRC_DIR}/ex_simpleProfiler.cpp)
+    add_executable(ex_BoostRandom  ${LIB_EXAMPLES_SRC_DIR}/random/ex_boost_random.cpp)
+    target_link_libraries(ex_BoostRandom cpp_factory)
+    add_dependencies(ex_BoostRandom cpp_factory)
+
+    add_executable(ex_EasyCloudViewer  ${LIB_EXAMPLES_SRC_DIR}/pcl/ex_EasyCloudViewer.cpp)
+    target_link_libraries(ex_EasyCloudViewer cpp_factory)
+    add_dependencies(ex_EasyCloudViewer cpp_factory)
+
+    #    add_executable(ex_simpleProfiler  ${LIB_EXAMPLES_SRC_DIR}/ex_simpleProfiler.cpp)
 #    target_link_libraries(ex_simpleProfiler cpp_factory)
 #    add_dependencies(ex_simpleProfiler cpp_factory)
 endif(${BUILD_EXAMPLES})
@@ -67,7 +79,7 @@ set(CPP_FACTORY_LIB_SRC
     )
 
 add_library(cpp_factory ${CPP_FACTORY_LIB_SRC})
-target_link_libraries(cpp_factory pthread ${Boost_LIBRARIES})
+target_link_libraries(cpp_factory pthread ${Boost_LIBRARIES} ${PCL_LIBRARIES})
 
 
 add_subdirectory(examples)

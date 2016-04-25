@@ -27,6 +27,7 @@
  * Source :
  *  http://stackoverflow.com/questions/1005476/how-to-detect-whether-there-is-a-specific-member-variable-in-class
  */
+#if __cplusplus > 201103L
 //TODO : c++11 is required
 #include <type_traits>
 #define DEFINE_MEMBER_CHECKER(MEMBER) \
@@ -43,6 +44,7 @@
 #define HAS_MEMBER(CLASS, MEMBER) \
     has_member_ ## MEMBER<CLASS>::value
 
+#endif
 
 
 /////////////////////////Example Code/////////////////////////////////////////////////////////////////

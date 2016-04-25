@@ -2,8 +2,8 @@
 // Created by ub1404 on 16. 3. 29.
 //
 
-#include <cpp_factory/ConsoleUtils.h>
-
+#include <cpp_factory/string/Conversions.h>
+#include <string.h>
 using namespace cpp_factory;
 
 struct MyStruct{
@@ -12,7 +12,6 @@ struct MyStruct{
 };
 
 int main(){
-
     std::cerr<<"Int to hex"<<std::endl;
     std::cerr<<"\t"<<std::hex<<125<<"<-->";
     std::cerr<<toHex(125)<<std::endl;
